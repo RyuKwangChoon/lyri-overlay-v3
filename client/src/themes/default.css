@@ -1,0 +1,13 @@
+/* 기본 v3 테마 */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #111;
+  color: #eee;
+  font-family: 'Pretendard', sans-serif;
+}
+
+h1, h2 {
+  font-weight: 700;
+}

@@ -1,0 +1,48 @@
+tunnel: lyri-tunnel
+credentials-file: C:\Users\BrianRyu\.cloudflared\fe1d9a7c-59d9-45e8-9e59-2ffbde6f0e88.json
+
+originRequest:
+  noTLSVerify: true
+  connectTimeout: 3s
+  disableChunkedEncoding: true
+  httpHostHeader: 127.0.0.1   # ✅ 여기서 IPv4 강제 (핵심!)
+  headers:
+    Access-Control-Allow-Origin: "*"
+    Access-Control-Allow-Headers: "Content-Type, Authorization"
+
+ingress:
+  # 🧠 REST API (게이트)
+  - hostname: api.lyrisudabang.com
+    path: /fromGpt
+    service: http://127.0.0.1:8788   # ✅ localhost → 127.0.0.1
+
+  # 💬 WebSocket (핵심)
+  - hostname: api.lyrisudabang.com
+    path: /ws
+    service: http://127.0.0.1:8787   # ✅ IPv4 강제
+
+  # 🎵 MP3 업로드 스트리밍 (핵심 수정)
+  - hostname: api.lyrisudabang.com
+    path: /uploads
+    service: http://127.0.0.1:8787
+    originRequest:
+      connectTimeout: 3000s        # ✅ 길게 유지
+      disableChunkedEncoding: false # ✅ 파일 전송은 chunked 허용
+      noTLSVerify: true
+      httpHostHeader: api.lyrisudabang.com
+
+  # ---- API (그 외 전부 → 서버로 전달)
+  - hostname: api.lyrisudabang.com
+    service: http://127.0.0.1:8787   # ✅ IPv4 강제
+    
+  # 🖥 Overlay UI
+  - hostname: overlay.lyrisudabang.com
+    service: http://127.0.0.1:8787   # ✅ IPv4 강제
+
+  # 🧠 REST API (GPT 송출용 추가 도메인)
+  - hostname: gpt.lyrisudabang.com
+    path: /fromGpt
+    service: http://127.0.0.1:8788   # ✅ IPv4 강제
+
+  # 🚨 기본 404 처리
+  - service: http_status:404
